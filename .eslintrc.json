@@ -3,6 +3,15 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "react-hooks/exhaustive-deps": "off"
-  }
+    "react-hooks/exhaustive-deps": "off",
+    "no-unused-vars": "off",
+    "no-explicit-any": "off"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "public/",
+    "*.config.js",
+    "*.config.ts"
+  ]
 } 
