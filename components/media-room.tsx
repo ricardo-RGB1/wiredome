@@ -1,24 +1,20 @@
-'use client'; 
+"use client";
 
-import { useEffect, useState } from 'react'; 
-import { LiveKitRoom, VideoConference } from '@livekit/components-react'; 
-import "@livekit/components-styles"; 
-import { Channel } from '@prisma/client'; 
-import { useUser } from '@clerk/nextjs'; 
-import { Loader2 } from 'lucide-react';  
-
-
+import { useEffect, useState } from "react";
+import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+import "@livekit/components-styles";
+import { useUser } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
 
 interface MediaRoomProps {
-    chatId: string; 
-    video: boolean; 
-    audio: boolean; 
+  chatId: string;
+  video: boolean;
+  audio: boolean;
 }
-
 
 /**
  * MediaRoom Component
- * 
+ *
  * This component handles the video/audio conferencing functionality using LiveKit.
  * It manages the connection to LiveKit rooms and renders the video conference interface.
  *
@@ -40,52 +36,52 @@ interface MediaRoomProps {
  * - Configures LiveKit room with appropriate media settings
  */
 export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
-    const { user } = useUser();  
-    const [token, setToken] = useState('');  
+  const { user } = useUser();
+  const [token, setToken] = useState("");
 
-    // Fetch LiveKit access token when component mounts or dependencies change
-    useEffect(() => {
-        // Don't proceed if user name is not available
-        if(!user?.firstName || !user?.lastName) return;  
+  // Fetch LiveKit access token when component mounts or dependencies change
+  useEffect(() => {
+    // Don't proceed if user name is not available
+    if (!user?.firstName || !user?.lastName) return;
 
-        // Combine first and last name for LiveKit identity
-        const name = `${user.firstName} ${user.lastName}`;  
+    // Combine first and last name for LiveKit identity
+    const name = `${user.firstName} ${user.lastName}`;
 
-        // Immediately invoked async function to fetch token
-        (async () => {
-            try {
-                const resp = await fetch(`/api/livekit?room=${chatId}&username=${name}`);  
-                const data = await resp.json(); 
-                setToken(data.token); 
-            } catch (error) {
-                console.log(error); 
-            }
-        })();
-    }, [user?.firstName, user?.lastName, chatId]);  
+    // Immediately invoked async function to fetch token
+    (async () => {
+      try {
+        const resp = await fetch(
+          `/api/livekit?room=${chatId}&username=${name}`
+        );
+        const data = await resp.json();
+        setToken(data.token);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [user?.firstName, user?.lastName, chatId]);
 
-    // Show loading spinner while waiting for token
-    if(token === '') {
-        return (
-            <div className='flex flex-col flex-1 justify-center items-center'>
-                <Loader2 className="size-7 text-zinc-500 animate-spin my-4" />
-                <p className='text-xs text-zinc-500 dark:text-zinc-400'>
-                    Loading...
-                </p>
-            </div>
-        )
-    }
-
-    // Render LiveKit video conference once token is available
+  // Show loading spinner while waiting for token
+  if (token === "") {
     return (
-        <LiveKitRoom
-            data-lk-theme="default"
-            serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-            token={token}
-            connect={true}
-            video={video}
-            audio={audio}
-        >
-            <VideoConference />
-        </LiveKitRoom>
-    )
-}
+      <div className="flex flex-col flex-1 justify-center items-center">
+        <Loader2 className="size-7 text-zinc-500 animate-spin my-4" />
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">Loading...</p>
+      </div>
+    );
+  }
+
+  // Render LiveKit video conference once token is available
+  return (
+    <LiveKitRoom
+      data-lk-theme="default"
+      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+      token={token}
+      connect={true}
+      video={video}
+      audio={audio}
+    >
+      <VideoConference />
+    </LiveKitRoom>
+  );
+};
