@@ -1,0 +1,22 @@
+/*
+ * This configuration file is used to customize the behavior of Visual Studio Code.
+ * It sets various options to enhance the coding experience, particularly for CSS and Tailwind CSS development.
+ * 
+ * Settings:
+ * - Disable CSS validation to avoid unnecessary warnings.
+ * - Enable Tailwind CSS Emmet completions for faster coding.
+ * - Enable quick suggestions for strings to improve code completion.
+ * - Associate *.css files with the Tailwind CSS language server for better syntax highlighting and features.
+ * - Enable inline suggestions to provide immediate code completion suggestions.
+ */
+{
+  "css.validate": false,
+  "tailwindCSS.emmetCompletions": true,
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.inlineSuggest.enabled": true
+} 

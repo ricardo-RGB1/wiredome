@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique // this is the user id from Clerk
+  name      String
+  imageUrl  String   @db.Text
+  email     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  servers  Server[] // this is the relation to the server table; this is an array of servers
+  members  Member[] // this is the relation to the member table; this is an array of members
+  channels Channel[] // this is the relation to the channel table; this is an array of channels
+
+  @@index([userId])
+}
+
+// Use the profileId field in the server table to store the id of the profile that created the server. 
+// onDelete: Cascade means that if the profile is deleted, the server will also be deleted. 
+model Server {
+  id         String @id @default(uuid())
+  name       String
+  imageUrl   String @db.Text
+  inviteCode String @unique
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade) // relation to the profile;
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  Member[] // this is the relation to the member table; this is an array of members
+  channels Channel[] // this is the relation to the channel table; this is an array of channels
+
+  @@index([profileId])
+}
+
+// Every server is going to have a member and every member is going to have a role: 
+enum MemberRole {
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+// Uses the serverId field in the member table to store the id of the server that the member is a part of.  
+model Member {
+  id   String     @id @default(uuid())
+  role MemberRole @default(GUEST) // default role is guest
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  messages Message[] // this is the relation to the message table; this is an array of messages
+  directMessages DirectMessage[] // this is the relation to the direct message table; this is an array of direct messages
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+
+
+
+  // Relations for direct messaging conversations
+  // A member can initiate many conversations (as MemberOne)
+  conversationInitiated Conversation[] @relation("MemberOne")
+
+  // A member can receive many conversations (as MemberTwo) 
+  conversationReceived Conversation[] @relation("MemberTwo")
+
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+  @@index([serverId, profileId]) // Composite index for queries that use both
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+  id   String      @id @default(uuid())
+  name String
+  type ChannelType @default(TEXT)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  messages Message[] // this is the relation to the message table; this is an array of messages
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([serverId])
+  @@index([serverId, profileId]) // Composite index for queries that use both
+}
+
+
+// Create the Message model
+// It will only be related to a member and a channel
+model Message {
+  id String @id @default(uuid())
+  content String @db.Text
+
+  fileUrl String? @db.Text 
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channelId String  
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false) // this is a flag to indicate if the message has been deleted; soft delete
+
+  
+
+  @@index([memberId])
+  @@index([channelId])
+  @@index([channelId, memberId])
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Conversation {
+  id String @id @default(uuid())
+
+  memberOneId String
+  memberOne Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId String
+  memberTwo Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  directMessages DirectMessage[] // this is the relation to the direct message table; this is an array of direct messages
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberOneId]) // index for memberOneId to speed up queries
+  @@index([memberTwoId]) // index for memberTwoId to speed up queries
+
+  // unique constraint to prevent duplicate conversations between the same two members
+  @@unique([memberOneId, memberTwoId])
+}
+
+ 
+ 
+model DirectMessage {
+  id String @id @default(uuid()) // unique identifier for the direct message
+  content String @db.Text // the actual message content stored as text
+  fileUrl String? @db.Text // optional URL to an attached file
+
+  memberId String // foreign key to the member who sent the message
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade) // relation to the Member model, cascading delete
+
+  conversationId String // foreign key to the conversation this message belongs to
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade) // relation to Conversation model, cascading delete
+
+  deleted Boolean @default(false) // this is a flag to indicate if the message has been deleted; soft delete
+  
+  createdAt DateTime @default(now()) // timestamp of when message was created
+  updatedAt DateTime @updatedAt // timestamp of when message was last updated
+
+
+  @@index([conversationId]) // index on conversationId for faster queries
+  @@index([memberId]) // index on memberId for faster queries
+} 
