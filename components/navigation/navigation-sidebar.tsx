@@ -1,4 +1,3 @@
-import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { NavigationSidebarItem } from "./nav-sidebar-item";
