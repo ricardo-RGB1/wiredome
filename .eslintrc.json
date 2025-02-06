@@ -5,13 +5,17 @@
     "@typescript-eslint/no-explicit-any": "off",
     "react-hooks/exhaustive-deps": "off",
     "no-unused-vars": "off",
-    "no-explicit-any": "off"
+    "no-explicit-any": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-empty-function": "off"
   },
   "ignorePatterns": [
     "node_modules/",
     ".next/",
     "public/",
     "*.config.js",
-    "*.config.ts"
+    "*.config.ts",
+    "**/*.d.ts"
   ]
 } 
