@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { io as ClientIO } from "socket.io-client";
+import { io as ClientIO, Socket } from "socket.io-client";
 
 type SocketContextType = {
-  socket: any | null;
+  socket: Socket | null;
   isConnected: boolean;
 };
 
@@ -20,12 +20,9 @@ const SocketContext = createContext<SocketContextType>({
   isConnected: false,
 });
 
-
-
-
 /**
  * useSocket hook that allows components to access the socket context
- * 
+ *
  * @returns SocketContextType - The context value containing the socket and connection status
  */
 export const useSocket = () => {
@@ -35,10 +32,6 @@ export const useSocket = () => {
   }
   return context;
 };
-
-
-
-
 
 /**
  * SocketProvider component that manages WebSocket connections for real-time communication
@@ -57,17 +50,16 @@ export const useSocket = () => {
  * @returns SocketContext.Provider wrapped around the children
  */
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const [socket, setSocket] = useState<any | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
 
   useEffect(() => {
-    const newSocket = new (ClientIO as any)(process.env.NEXT_PUBLIC_SITE_URL!, {
+    const newSocket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
       path: "/api/socket/io",
       addTrailingSlash: false,
-    }); // initialize the socket connection
+    });
 
     newSocket.on("connect", () => {
-      // when the socket connects, set the isConnected state to true
       setIsConnected(true);
     });
 
@@ -75,10 +67,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setIsConnected(false);
     });
 
-    setSocket(newSocket); // set the socket state to the new socket
+    setSocket(newSocket);
 
     return () => {
-      newSocket.disconnect(); // Clean up on unmount
+      newSocket.disconnect();
     };
   }, []);
 
