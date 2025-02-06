@@ -68,7 +68,7 @@ export const EditServerModal = () => {
       form.setValue("name", server.name);
       form.setValue("imageUrl", server.imageUrl);
     }
-  }, [server]);
+  }, [server, form]);
 
   // Extract the loading state from the form state
   const isLoading = form.formState.isSubmitting;
