@@ -38,7 +38,6 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
-import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
 // define the form schema/validation rules
@@ -59,14 +58,14 @@ const formSchema = z.object({
 export const EditChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal();
   const router = useRouter();
-  const params = useParams();
+
   // check if the modal is open and the type is "createChannel"
   const isModalOpen = isOpen && type === "editChannel";
 
   // Only destructure data if the modal is open
-  const { channelType, channel, server } = isModalOpen
+  const { channel, server } = isModalOpen
     ? data
-    : { channelType: undefined, channel: undefined, server: undefined };
+    : { channel: undefined, server: undefined };
 
   // Then use zodResolver to convert it for React Hook Form
   // "these values should match exactly what my form schema defines"!
